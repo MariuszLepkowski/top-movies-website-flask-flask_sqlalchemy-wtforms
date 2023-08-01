@@ -76,14 +76,14 @@ with app.app_context():
 #     review="Loved it!""I liked the water.",
 #     img_url="https://www.shortlist.com/media/images/2019/05/the-30-coolest-alternative-movie-posters-ever-2-1556670563-K61a-column-width-inline.jpg"
 # )
-#
+
 # with app.app_context():
 #     db.session.add(third_movie)
 #     db.session.commit()
 
-# CREATE A FORM
 
-class UpdateForm(FlaskForm):
+# CREATE A FORM
+class RateMovieForm(FlaskForm):
     rating = StringField(
         label="Your rating out of 10 e. g. 7.5",
         validators=[DataRequired()],
@@ -97,18 +97,26 @@ class UpdateForm(FlaskForm):
     submit = SubmitField(label="Done")
 
 
+class AddMovie(FlaskForm):
+    title = StringField(
+        label="Movie Title",
+        validators=[DataRequired()]
+    )
+
+    submit = SubmitField(label="Add Movie")
+
+
 @app.route("/")
 def home():
-    movies = db.session.execute(db.select(Movie).order_by(Movie.ranking)).scalars()
-    movies_sorted_by_ranking = sorted(movies, key=lambda x: x.ranking, reverse=True)
-    return render_template("index.html", movies=movies_sorted_by_ranking)
+    movies = db.session.execute(db.select(Movie).order_by(Movie.rating)).scalars()
+    return render_template("index.html", movies=movies)
 
 
 @app.route("/edit", methods=['POST', 'GET'])
 def edit_rating_review():
     movie_id = request.args.get('id')
     movie_selected = db.get_or_404(Movie, movie_id)
-    form = UpdateForm()
+    form = RateMovieForm()
 
     if request.method == 'POST':
         movie_selected.rating = request.form["rating"]
@@ -127,6 +135,13 @@ def delete_movie():
     db.session.commit()
     return redirect(url_for('home'))
 
+
+@app.route("/add", methods=['GET', 'POST'])
+def add_movie():
+    form = AddMovie()
+    if request.method == 'POST':
+        return redirect(url_for('home'))
+    return render_template("add.html", form=form)
 
 
 if __name__ == '__main__':
