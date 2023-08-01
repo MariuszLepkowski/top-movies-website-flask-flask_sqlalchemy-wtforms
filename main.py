@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+TOKEN = os.getenv('TOKEN')
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 Bootstrap5(app)
@@ -139,6 +141,31 @@ def delete_movie():
 @app.route("/add", methods=['GET', 'POST'])
 def add_movie():
     form = AddMovie()
+    
+    if request.method == 'POST' and form.validate_on_submit():
+
+        headers = {
+            "accept": "application/json",
+            "Authorization": TOKEN,
+        }
+
+        parameters = {
+            "query": form.title.data,
+        }
+
+        url = "https://api.themoviedb.org/3/search/movie"
+        response = requests.get(url=url, params=parameters, headers=headers)
+        search_results = response.json()
+
+        movies_to_select = []
+
+        for movie in search_results['results']:
+            movie_to_select = {
+                'title': movie['title'],
+                'release_date': movie['release_date']
+            }
+            movies_to_select.append(movie_to_select)
+        return render_template("select.html", movies=movies_to_select)
 
     return render_template("add.html", form=form)
 
