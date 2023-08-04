@@ -30,9 +30,9 @@ class Movie(db.Model):
     title = db.Column(db.String(250), unique=True, nullable=False)
     year = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(500), nullable=False)
-    rating = db.Column(db.Float, nullable=True)
-    ranking = db.Column(db.Integer, nullable=True)
-    review = db.Column(db.String(250), nullable=True)
+    rating = db.Column(db.Float, nullable=True, default=0.0)
+    ranking = db.Column(db.Integer, nullable=True, default=0.0)
+    review = db.Column(db.String(250), nullable=True, default='')
     img_url = db.Column(db.String(250), nullable=False)
 
 
@@ -176,7 +176,7 @@ def add_movie():
     return render_template("add.html", form=form)
 
 
-@app.route("/get_movie_details/<int:movie_id>")
+@app.route("/get_movie_details/<int:movie_id>", methods=['GET', 'POST'])
 def add_selected_movie(movie_id):
     headers = {
         "accept": "application/json",
@@ -193,6 +193,13 @@ def add_selected_movie(movie_id):
     year = movie_details['release_date']
     description = movie_details['overview']
 
+    # Check if the movie with the same title already exists in the database
+    existing_movie = Movie.query.filter_by(title=title).first()
+
+    if existing_movie:
+        # If the movie exists, redirect to the edit page for that movie
+        return redirect(url_for('edit_rating_review', id=existing_movie.id))
+    
     # Create a new Movie object with the extracted details
 
     new_movie = Movie(
@@ -200,18 +207,17 @@ def add_selected_movie(movie_id):
         img_url=img_url,
         year=year,
         description=description,
-        rating=0,
-        ranking=0,
-        review="tba"
-
     )
 
     with app.app_context():
         db.session.add(new_movie)
         db.session.commit()
 
+    if new_movie.id is None:
+        new_movie.id = generate_unique_id()
 
-    return redirect(url_for('home'))
+
+    return redirect(url_for('edit_rating_review', id=new_movie.id))
 
 
 
