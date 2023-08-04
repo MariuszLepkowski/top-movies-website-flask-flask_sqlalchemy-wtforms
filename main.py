@@ -39,6 +39,9 @@ class Movie(db.Model):
 with app.app_context():
     db.create_all()
 
+
+
+
 ## After adding the new_movie the code needs to be commented out/deleted.
 ## So you are not trying to add the same movie twice. The db will reject non-unique movie titles.
 # new_movie = Movie(
@@ -141,7 +144,7 @@ def delete_movie():
 @app.route("/add", methods=['GET', 'POST'])
 def add_movie():
     form = AddMovie()
-    
+
     if request.method == 'POST' and form.validate_on_submit():
 
         headers = {
@@ -162,12 +165,54 @@ def add_movie():
         for movie in search_results['results']:
             movie_to_select = {
                 'title': movie['title'],
-                'release_date': movie['release_date']
+                'release_date': movie['release_date'],
+                'id': movie['id']
             }
+
+
+
             movies_to_select.append(movie_to_select)
         return render_template("select.html", movies=movies_to_select)
-
     return render_template("add.html", form=form)
+
+
+@app.route("/get_movie_details/<int:movie_id>")
+def add_selected_movie(movie_id):
+    headers = {
+        "accept": "application/json",
+        "Authorization": TOKEN,
+    }
+
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}"
+    response = requests.get(url=url, headers=headers)
+    movie_details = response.json()
+
+    # Extract the required movie details from the API response
+    title = movie_details['title']
+    img_url = f"https://image.tmdb.org/t/p/w500/{movie_details['poster_path']}"
+    year = movie_details['release_date']
+    description = movie_details['overview']
+
+    # Create a new Movie object with the extracted details
+
+    new_movie = Movie(
+        title=title,
+        img_url=img_url,
+        year=year,
+        description=description,
+        rating=0,
+        ranking=0,
+        review="tba"
+
+    )
+
+    with app.app_context():
+        db.session.add(new_movie)
+        db.session.commit()
+
+
+    return redirect(url_for('home'))
+
 
 
 if __name__ == '__main__':

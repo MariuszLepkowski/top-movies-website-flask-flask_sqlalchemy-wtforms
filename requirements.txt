@@ -5,3 +5,4 @@ Flask_WTF==1.1.1
 Requests==2.31.0
 WTForms==3.0.1
 python-dotenv==1.0.0
+SQLAlchemy~=2.0.19
