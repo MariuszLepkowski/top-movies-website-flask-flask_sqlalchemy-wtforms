@@ -18,13 +18,13 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 Bootstrap5(app)
 
 
-##CREATE DB
+# CREATE DB
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///favorite-movies.db"
 db = SQLAlchemy()
 db.init_app(app)
 
 
-##CREATE TABLE
+# CREATE TABLE
 class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), unique=True, nullable=False)
@@ -38,53 +38,6 @@ class Movie(db.Model):
 
 with app.app_context():
     db.create_all()
-
-
-
-
-## After adding the new_movie the code needs to be commented out/deleted.
-## So you are not trying to add the same movie twice. The db will reject non-unique movie titles.
-# new_movie = Movie(
-#     title="Phone Booth",
-#     year=2002,
-#     description="Publicist Stuart Shepard finds himself trapped in a phone booth, pinned down by an extortionist's sniper rifle. Unable to leave or receive outside help, Stuart's negotiation with the caller leads to a jaw-dropping climax.",
-#     rating=7.3,
-#     ranking=10,
-#     review="My favourite character was the caller.",
-#     img_url="https://image.tmdb.org/t/p/w500/tjrX2oWRCM3Tvarz38zlZM7Uc10.jpg"
-# )
-# with app.app_context():
-#     db.session.add(new_movie)
-#     db.session.commit()
-
-# second_movie = Movie(
-#     title="Avatar The Way of Water",
-#     year=2022,
-#     description="Set more than a decade after the events of the first film, learn the story of the Sully family (Jake, Neytiri, and their kids), the trouble that follows them, the lengths they go to keep each other safe, the battles they fight to stay alive, and the tragedies they endure.",
-#     rating=7.3,
-#     ranking=9,
-#     review="I liked the water.",
-#     img_url="https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg"
-# )
-#
-# with app.app_context():
-#     db.session.add(second_movie)
-#     db.session.commit()
-
-
-# third_movie = Movie(
-#     title="Drive",
-#     year=2011,
-#     description="A mysterious Hollywood stuntman and mechanic moonlights as a getaway driver and finds himself in trouble when he helps out his neighbor in this action drama.",
-#     rating=7.5,
-#     ranking=1,
-#     review="Loved it!""I liked the water.",
-#     img_url="https://www.shortlist.com/media/images/2019/05/the-30-coolest-alternative-movie-posters-ever-2-1556670563-K61a-column-width-inline.jpg"
-# )
-
-# with app.app_context():
-#     db.session.add(third_movie)
-#     db.session.commit()
 
 
 # CREATE A FORM
@@ -169,8 +122,6 @@ def add_movie():
                 'id': movie['id']
             }
 
-
-
             movies_to_select.append(movie_to_select)
         return render_template("select.html", movies=movies_to_select)
     return render_template("add.html", form=form)
@@ -199,7 +150,7 @@ def add_selected_movie(movie_id):
     if existing_movie:
         # If the movie exists, redirect to the edit page for that movie
         return redirect(url_for('edit_rating_review', id=existing_movie.id))
-    
+
     # Create a new Movie object with the extracted details
 
     new_movie = Movie(
@@ -216,9 +167,7 @@ def add_selected_movie(movie_id):
     if new_movie.id is None:
         new_movie.id = generate_unique_id()
 
-
     return redirect(url_for('edit_rating_review', id=new_movie.id))
-
 
 
 if __name__ == '__main__':
